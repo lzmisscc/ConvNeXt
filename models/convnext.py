@@ -99,7 +99,12 @@ class ConvNeXt(nn.Module):
         self.apply(self._init_weights)
         self.head.weight.data.mul_(head_init_scale)
         self.head.bias.data.mul_(head_init_scale)
-
+        
+        self.features = nn.Sequential()
+        for index, (i, j) in enumerate(zip(self.downsample_layers, self.stages)):
+            self.features.add_module(f'downsample_layers_{index}', i)
+            self.features.add_module(f'stage_{index}', j)
+            
     def _init_weights(self, m):
         if isinstance(m, (nn.Conv2d, nn.Linear)):
             trunc_normal_(m.weight, std=.02)
@@ -115,6 +120,7 @@ class ConvNeXt(nn.Module):
         x = self.forward_features(x)
         x = self.head(x)
         return x
+
 
 class LayerNorm(nn.Module):
     r""" LayerNorm that supports two data formats: channels_last (default) or channels_first. 
